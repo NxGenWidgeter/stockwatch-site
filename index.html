@@ -293,7 +293,7 @@
       </g>
     </svg>
     <span class="name">Stockwatch</span>
-    <span class="ver">v1.8.1</span>
+    <span class="ver">v1.9.0</span>
     <nav>
       <a href="#what">What it does</a>
       <a href="#week">A week with it</a>
@@ -415,6 +415,9 @@
         <p>When it is time to order, a row with a <b>restock link</b> opens that item's page at
           your supplier — <code>Site ↗</code> next to <b>Order</b> — instead of making you retype
           item numbers into their search box.</p>
+        <p>Bought it on the supplier's site instead? <b>Elsewhere…</b> flags the item, takes it off
+          the order list so nobody orders it twice, and the flag clears itself when the stock
+          actually arrives.</p>
       </div>
       <div class="feat">
         <span class="lab">On order</span>
@@ -723,13 +726,13 @@
         </ol>
       </div>
       <div>
-        <pre><b>tar</b> -xzf stockwatch-1.8.1.tar.gz &amp;&amp; cd stockwatch-1.8.1
+        <pre><b>tar</b> -xzf stockwatch-1.9.0.tar.gz &amp;&amp; cd stockwatch-1.9.0
 <b>./run.sh</b>                      <span style="color:var(--muted)"># creates its venv, opens :8123</span>
 <span style="color:var(--muted)"># optional: run it as a service</span>
 <b>sudo</b> cp deploy/stockwatch.service /etc/systemd/system/
 <b>sudo</b> systemctl enable --now stockwatch
 
-<b>curl</b> -s localhost:8123/api/health   <span style="color:var(--muted)"># {"ok":true,"version":"1.8.1"}</span></pre>
+<b>curl</b> -s localhost:8123/api/health   <span style="color:var(--muted)"># {"ok":true,"version":"1.9.0"}</span></pre>
         <div class="callout">
           <h3>What it needs</h3>
           <p>Python 3.11 or newer on Linux/macOS (the Windows build ships its own runtime), 60 MB of
@@ -774,7 +777,7 @@
   <div class="wrap inner">
     <div>
       <h2>Run it on a machine you already have.</h2>
-      <p>Stockwatch 1.8.1 ships with its test suite, a verified backup and restore, systemd and
+      <p>Stockwatch 1.9.0 ships with its test suite, a verified backup and restore, systemd and
         launchd units, a Windows installer, and a distribution guide that covers install, upgrade
         and recovery. The database never leaves your hardware.</p>
       <p class="dl-note">Ask for the build and you get the archive with the install steps; say
@@ -789,14 +792,14 @@
       </div>
       <p class="dl-note">The build is private: write to <a href="mailto:nxautomation003@gmail.com">nxautomation003@gmail.com</a>,
         say which platform and where it will run, and you get the archive with the install steps ·
-        v1.8.1 · 150 KB archive · Windows installer at 1.6.1</p>
+        v1.9.0 · 150 KB archive · Windows installer at 1.6.1</p>
     </div>
   </div>
 </div>
 
 <footer>
   <div class="wrap row">
-    <span>Stockwatch v1.8.1</span>
+    <span>Stockwatch v1.9.0</span>
     <span>·</span>
     <span>NxGenWidgeter</span>
     <span>Self-hosted · SQLite · Python</span>
