@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stockwatch — inventory that tells you what to order, and what it costs</title>
-<meta name="description" content="Stockwatch is a self-hosted inventory dashboard: movements, days of cover, reorder points from real usage, a restock list, scheduled deliveries, monthly usage cost, alerts, imports and PDF/Excel exports with an audit summary. One machine, local only. Bundles for a single shop up to a multi-site group.">
+<meta name="description" content="Stockwatch is a self-hosted inventory dashboard: movements, days of cover, reorder points from real usage, a restock list with one-click supplier links, scheduled deliveries, monthly usage cost, alerts, imports and PDF/Excel exports with an audit summary. One machine, local only. Bundles for a single shop up to a multi-site group.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230d0b09'/%3E%3Cg fill='none' stroke='%23e7c97f' stroke-width='3'%3E%3Cpath d='M34 27 L34 73 L66 27 L66 73'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root{
@@ -387,7 +387,7 @@
   <div class="wrap">
     <div class="sec-head">
       <p class="eyebrow">The whole product, no gaps</p>
-      <h2>Twenty things it does,<br>in the order they matter.</h2>
+      <h2>Everything it does,<br>in the order it matters.</h2>
       <p>Everything below is in the one build. No add-ons, no modules to unlock, no API key:
         the same software runs your shelf whether you count three hundred items or thirty thousand.</p>
     </div>
@@ -412,6 +412,9 @@
         <p><b>Fill missing reorder points</b> sets each one from its own usage:
           daily rate × (lead time + safety days). A number you type by hand always wins, and an
           item with no threshold never fires a false alarm.</p>
+        <p>When it is time to order, a row with a <b>restock link</b> opens that item's page at
+          your supplier — <code>Site ↗</code> next to <b>Order</b> — instead of making you retype
+          item numbers into their search box.</p>
       </div>
       <div class="feat">
         <span class="lab">On order</span>
@@ -457,6 +460,22 @@
       </div>
       <div class="feat">
         <span class="lab">Housekeeping</span>
+      <div class="feat">
+        <span class="lab">Scanning</span>
+        <h3>Works with the scanner you already have</h3>
+        <p>A USB or Bluetooth scanner is a keyboard — it types the code and presses Enter — so
+          there is nothing to install. Open Scan, choose count, stock in or stock out, and beep
+          your way down the shelf: each label lands in the log with the item's name and new
+          number. It looks up the barcode first and falls back to the item number.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Income</span>
+        <h3>What actually earns</h3>
+        <p>Selling is a button on the row: quantity, price, done — stock comes out through the
+          movement log and the cash goes on the record. Each sale keeps the cost price it had at
+          that moment, so profit is real profit, and the header names <b>the most profitable item
+          and the least</b> for the last thirty days.</p>
+      </div>
         <h3>Categories renamed once</h3>
         <p>A category is a string on each row, so renaming is one action for all sixty items —
           and renaming onto a name that already exists merges the two and tells you how many
