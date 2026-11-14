@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stockwatch — inventory that tells you what to order, and what it costs</title>
-<meta name="description" content="Stockwatch is a self-hosted inventory dashboard: movements, days of cover, reorder points from real usage, scheduled deliveries, cost and budget, alerts, imports and PDF/Excel exports with an audit summary. One machine, local only. Bundles for a single shop up to a multi-site group.">
+<meta name="description" content="Stockwatch is a self-hosted inventory dashboard: movements, days of cover, reorder points from real usage, a restock list, scheduled deliveries, monthly usage cost, alerts, imports and PDF/Excel exports with an audit summary. One machine, local only. Bundles for a single shop up to a multi-site group.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230d0b09'/%3E%3Cg fill='none' stroke='%23e7c97f' stroke-width='3'%3E%3Cpath d='M34 27 L34 73 L66 27 L66 73'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root{
@@ -443,18 +443,17 @@
       </div>
       <div class="feat">
         <span class="lab">History</span>
-        <h3>A stock chart, and candles</h3>
+        <h3>A stock chart worth reading</h3>
         <p>Click a row and the panel plots its level over 7, 30 or 90 days with the reorder line,
-          a hover read-out of each movement and a marker where a spike was detected. Switch to
-          candle mode and the same series reads as open/high/low/close buckets. Every row also
-          carries a 30-day sparkline.</p>
+          a hover read-out of each movement and a marker where a spike was detected. Every row
+          also carries a 30-day sparkline, so the table answers "trending down?" without a click.</p>
       </div>
       <div class="feat">
         <span class="lab">Money</span>
         <h3>What it costs to use</h3>
-        <p>Usage is priced at unit price, per item, per category and in total, by month or year,
-          with a <b>budget range</b> that turns into “days of cover at this budget”. The yearly
-          counter is typed from the accountant's figure and never guessed from movements.</p>
+        <p>Usage is priced at each item's unit price and totalled for the month, so the restock
+          panel can say “usage this month ≈ RM 783 · this order ≈ RM 50”. One figure, next to the
+          decision it belongs to — no budget spreadsheet to keep in step.</p>
       </div>
       <div class="feat">
         <span class="lab">Housekeeping</span>
@@ -582,9 +581,9 @@
       <li>
         <span class="when">Month end</span>
         <h3>The number for the meeting</h3>
-        <p>The cost panel prices the month's usage per category, shows what is left of the budget
-          and how many days that buys. The yearly counter takes the accountant's figure and keeps
-          a running total against the year's budget — a statement, not a guess.</p>
+        <p>Under the list, one line prices the month's usage and the order you are about to
+          place — enough to sanity-check a delivery against a budget without turning the board
+          into an accounting package.</p>
       </li>
       <li>
         <span class="when">When something changes</span>
@@ -628,13 +627,13 @@
         <span class="tag">Business · most chosen</span>
         <h3>A working warehouse</h3>
         <p class="for">A store room with several people, suppliers on lead times and a monthly
-          budget to stay inside.</p>
+          spend to keep an eye on.</p>
         <p class="price">$690<small>one-time · up to 5,000 items · 15 accounts</small></p>
         <ul>
           <li>Everything in Beginner, plus:</li>
           <li>Up to <b>5,000 items</b>, up to <b>3 sites</b> on one install</li>
           <li><b>15 accounts</b> with teams and leaders</li>
-          <li><b>Scheduled stock</b>, supplier lead times, cost &amp; budget</li>
+          <li><b>Restock list</b>, scheduled stock, supplier lead times</li>
           <li><b>12 months</b> of updates</li>
           <li>Priority support, 1 business day</li>
           <li>Remote install and your workbook converted</li>
