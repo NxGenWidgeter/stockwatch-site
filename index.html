@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stockwatch — inventory that tells you what to order</title>
+<meta name="description" content="Stockwatch is a self-hosted inventory dashboard for anyone who counts stock — clinics, pharmacies, workshops, shops. It tracks usage, cover and incoming deliveries, and tells you what to reorder before you run out.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230d0b09'/%3E%3Cg fill='none' stroke='%23e7c97f' stroke-width='3'%3E%3Cpath d='M34 27 L34 73 L66 27 L66 73'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0d0b09;
+    --surface:#141110;
+    --surface-2:#1b1714;
+    --line:#2a2320;
+    --line-soft:#211c19;
+    --ink:#f2ece2;
+    --body:#c9bfae;
+    --muted:#948874;
+    --accent:#e7c97f;
+    --accent-deep:#c9a75c;
+    --accent-wash:rgba(231,201,127,.08);
+    --green:#7fd18b;
+    --red:#e0796b;
+    --serif:ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --wrap:1120px;
+    --pad:clamp(20px, 4vw, 44px);
+    --seam:clamp(56px, 6.5vw, 92px);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--body);
+    font:400 16px/1.65 var(--sans);
+    text-wrap:pretty;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{color:var(--ink); font-family:var(--serif); font-weight:400; letter-spacing:-.01em; margin:0}
+  p{margin:0}
+  a{color:var(--accent); text-decoration-thickness:1px; text-underline-offset:3px}
+  a:hover{color:var(--accent-deep)}
+  code,kbd{font-family:var(--mono); font-size:.87em; color:var(--ink);
+    background:var(--surface-2); border:1px solid var(--line-soft); border-radius:5px; padding:.1em .38em}
+  .wrap{max-width:var(--wrap); margin:0 auto; padding:0 var(--pad)}
+  .eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+  .rule{height:1px; background:var(--line); border:0; margin:0}
+
+  /* ---------- top bar ---------- */
+  header{border-bottom:1px solid var(--line-soft)}
+  .bar{display:flex; align-items:center; gap:16px; padding-block:16px}
+  .bar .mark{width:30px; height:30px; flex:none; color:var(--accent)}
+  .bar .name{font-family:var(--serif); font-size:19px; color:var(--ink); letter-spacing:.01em}
+  .bar .ver{font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--line);
+    border-radius:999px; padding:2px 8px; margin-left:2px}
+  .bar nav{margin-left:auto; display:flex; gap:22px; font-size:13.5px}
+  .bar nav a{color:var(--body); text-decoration:none}
+  .bar nav a:hover{color:var(--ink)}
+  @media (max-width:720px){ .bar nav{display:none} }
+
+  /* ---------- hero ---------- */
+  .hero{padding-block:clamp(44px,7vw,86px) clamp(32px,4vw,52px)}
+  .hero-grid{display:grid; grid-template-columns:minmax(0,1.45fr) minmax(0,.75fr); gap:clamp(24px,4vw,56px); align-items:start}
+  .hero h1{font-size:clamp(34px,5.2vw,62px); line-height:1.04; margin:14px 0 0}
+  .hero h1 em{font-style:italic; color:var(--accent-deep)}
+  .hero .lede{margin-top:20px; font-size:clamp(16px,1.6vw,18.5px); color:var(--body); max-width:52ch}
+  .hero .facts{margin-top:26px; display:flex; flex-wrap:wrap; gap:8px 16px; font-size:12.5px; color:var(--muted)}
+  .hero .facts b{color:var(--ink); font-weight:600}
+  .hero-art{justify-self:end; width:100%; max-width:300px; color:var(--accent); opacity:.9}
+  .verticals{margin-top:26px; font-size:13px; color:var(--muted); letter-spacing:.01em}
+  .verticals span{color:var(--hint, var(--muted)); text-transform:uppercase; font-size:10.5px;
+    letter-spacing:.13em; margin-right:8px}
+  .verticals i{font-style:normal; color:var(--muted); opacity:.55; margin:0 6px}
+  .shelves{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; margin-top:clamp(24px,3vw,38px)}
+  @media (max-width:960px){ .shelves{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  @media (max-width:560px){ .shelves{grid-template-columns:minmax(0,1fr)} }
+  .shelf{border-top:1px solid var(--line); padding-top:14px}
+  .shelf h3{font-size:15px; font-family:var(--sans); font-weight:600; margin-bottom:3px}
+  .shelf .eg{font-family:var(--mono); font-size:11.5px; color:var(--accent-deep); margin-bottom:9px}
+  .shelf p{font-size:13.5px; color:var(--body)}
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:minmax(0,1fr)}
+    .hero-art{display:none}
+  }
+
+  /* ---------- the product strip ---------- */
+  .strip{border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); background:var(--surface)}
+  .strip .inner{padding-block:clamp(26px,3.4vw,40px)}
+  .strip .cap{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:14px}
+  table.rows{width:100%; border-collapse:collapse; font-size:14px}
+  table.rows th{font:500 11px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--muted);
+    text-align:left; padding:0 12px 10px; border-bottom:1px solid var(--line)}
+  table.rows td{padding:11px 12px; border-bottom:1px solid var(--line-soft); color:var(--body); white-space:nowrap}
+  table.rows td.num{text-align:right; font-variant-numeric:tabular-nums}
+  table.rows tr:last-child td{border-bottom:0}
+  table.rows .item{color:var(--ink)}
+  table.rows .sku{display:block; font-family:var(--mono); font-size:11px; color:var(--muted)}
+  .chip{display:inline-block; font:600 10.5px/1 var(--sans); letter-spacing:.06em; text-transform:uppercase;
+    padding:4px 7px; border-radius:4px; border:1px solid}
+  .chip.low{color:var(--red); border-color:rgba(224,121,107,.35); background:rgba(224,121,107,.08)}
+  .chip.ok{color:var(--green); border-color:rgba(127,209,139,.28); background:rgba(127,209,139,.07)}
+  .incoming{display:inline-flex; align-items:baseline; gap:5px; margin-left:10px; padding:2px 8px; border-radius:999px;
+    border:1px solid rgba(127,209,139,.32); background:rgba(127,209,139,.10); color:var(--green);
+    font:700 11.5px/1.6 var(--sans); font-variant-numeric:tabular-nums}
+  .incoming span{font-weight:500; color:var(--green); opacity:.85}
+  .strip .note{margin-top:14px; font-size:12.5px; color:var(--muted)}
+  @media (max-width:720px){
+    table.rows .opt{display:none}
+    table.rows td, table.rows th{padding-left:6px; padding-right:6px; font-size:13px}
+    .incoming{margin-left:6px}
+  }
+
+  /* ---------- sections ---------- */
+  section{padding:var(--seam) 0}
+  section + section{border-top:1px solid var(--line-soft)}
+  .sec-head{max-width:60ch}
+  .sec-head h2{font-size:clamp(25px,3.2vw,36px); line-height:1.15; margin-top:10px}
+  .sec-head p{margin-top:14px; font-size:16.5px}
+
+  .split{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:clamp(24px,4vw,60px); margin-top:clamp(26px,3.4vw,44px)}
+  @media (max-width:860px){ .split{grid-template-columns:minmax(0,1fr)} }
+
+  /* grid children default to min-width:auto, so one long <pre> line widens the
+     whole track and pushes the page sideways on a phone */
+  .split > *, .scheme > *, .hero-grid > *, .power > *, .close .inner > *{min-width:0}
+  .tscroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+
+  /* numbered flow */
+  ol.flow{list-style:none; margin:0; padding:0; counter-reset:step}
+  ol.flow li{position:relative; padding:0 0 26px 46px; counter-increment:step}
+  ol.flow li::before{content:counter(step,decimal-leading-zero); position:absolute; left:0; top:1px;
+    font-family:var(--mono); font-size:12px; color:var(--accent-deep); letter-spacing:.04em}
+  ol.flow li::after{content:""; position:absolute; left:11px; top:22px; bottom:6px; width:1px; background:var(--line)}
+  ol.flow li:last-child{padding-bottom:0}
+  ol.flow li:last-child::after{display:none}
+  ol.flow h3{font-size:17px; font-family:var(--sans); font-weight:600; margin-bottom:5px}
+  ol.flow p{font-size:14.5px; color:var(--body)}
+
+  /* route table */
+  table.routes{width:100%; border-collapse:collapse; margin-top:clamp(24px,3vw,38px); font-size:14px}
+  table.routes th{font:500 11px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--muted);
+    text-align:left; padding:0 14px 10px; border-bottom:1px solid var(--line)}
+  table.routes td{padding:14px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+  table.routes tr:last-child td{border-bottom:0}
+  table.routes td:first-child{color:var(--ink); white-space:nowrap}
+  table.routes .who{color:var(--muted); font-size:12.5px}
+  pre{margin:0; overflow:auto; background:var(--surface); border:1px solid var(--line); border-radius:8px;
+    padding:14px 16px; font-family:var(--mono); font-size:12.5px; line-height:1.7; color:var(--body)}
+  pre b{color:var(--accent); font-weight:400}
+  .cmd{margin-top:18px}
+
+  /* outage diagram */
+  .power{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:clamp(24px,3vw,38px)}
+  @media (max-width:760px){ .power{grid-template-columns:minmax(0,1fr)} }
+  .chain{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px}
+  .chain h3{font-size:14px; font-family:var(--sans); font-weight:600; letter-spacing:.01em; margin-bottom:14px}
+  .chain .bad h3{color:var(--red)}
+  .chain .good h3{color:var(--green)}
+  .nodes{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12.5px; color:var(--body)}
+  .node{border:1px solid var(--line); background:var(--surface-2); border-radius:6px; padding:7px 11px; white-space:nowrap}
+  .node.ups{border-color:rgba(127,209,139,.35); color:var(--green)}
+  .node.dead{border-color:rgba(224,121,107,.3); color:var(--red); text-decoration:line-through}
+  .arrow{color:var(--muted)}
+  .chain p{margin-top:14px; font-size:13px; color:var(--muted)}
+
+  /* checklists */
+  ul.check{list-style:none; margin:0; padding:0; font-size:14.5px}
+  ul.check li{position:relative; padding:0 0 14px 26px}
+  ul.check li::before{content:""; position:absolute; left:2px; top:7px; width:11px; height:6px;
+    border-left:1.5px solid var(--accent); border-bottom:1.5px solid var(--accent); transform:rotate(-45deg)}
+  ul.check b{color:var(--ink); font-weight:600}
+
+  /* account naming */
+  .scheme{margin-top:clamp(24px,3vw,38px); display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:clamp(20px,3.4vw,48px)}
+  @media (max-width:860px){ .scheme{grid-template-columns:minmax(0,1fr)} }
+  table.branch{width:100%; border-collapse:collapse; font-size:13.5px}
+  table.branch th{font:500 11px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--muted);
+    text-align:left; padding:0 10px 9px; border-bottom:1px solid var(--line)}
+  table.branch td{padding:9px 10px; border-bottom:1px solid var(--line-soft); font-family:var(--mono); font-size:12.5px; color:var(--body)}
+  table.branch td.state{font-family:var(--sans); color:var(--muted)}
+  table.branch tr:last-child td{border-bottom:0}
+  .callout{border:1px solid var(--line); border-radius:10px; padding:18px 20px; background:var(--surface); margin-top:20px}
+  .callout h3{font-size:14.5px; font-family:var(--sans); font-weight:600; color:var(--accent-deep); margin-bottom:8px}
+  .callout p{font-size:13.5px}
+
+  /* limits */
+  .limits{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; margin-top:clamp(24px,3vw,38px)}
+  .limit{border-left:1px solid var(--line); padding:2px 0 2px 16px}
+  .limit h3{font-size:14px; font-family:var(--sans); font-weight:600; margin-bottom:5px}
+  .limit p{font-size:13.5px; color:var(--muted)}
+
+  /* close */
+  .close{background:var(--surface); border-top:1px solid var(--line)}
+  .close .inner{padding-block:clamp(44px,5.4vw,72px); display:grid; grid-template-columns:minmax(0,1fr) auto; gap:26px; align-items:center}
+  .close h2{font-size:clamp(24px,3vw,34px)}
+  .close p{margin-top:10px; font-size:15px; max-width:56ch}
+  .downs{display:grid; gap:8px; min-width:230px}
+  .dl{display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    padding:11px 14px; border:1px solid var(--line); border-radius:7px; background:var(--surface-2);
+    color:var(--ink); text-decoration:none}
+  .dl:hover{border-color:var(--accent); background:var(--accent-wash); color:var(--ink)}
+  .dl b{font:600 13.5px/1 var(--sans); letter-spacing:.01em}
+  .dl span{font:11px/1 var(--mono); color:var(--muted)}
+  .dl:hover span{color:var(--accent-deep)}
+  .dl-note{margin-top:10px; font-size:11.5px; color:var(--muted)}
+  .btn{display:inline-block; padding:12px 18px; border-radius:7px; border:1px solid var(--accent);
+    color:var(--bg); background:var(--accent); font:600 13.5px/1 var(--sans); text-decoration:none; white-space:nowrap}
+  .btn:hover{background:var(--accent-deep); border-color:var(--accent-deep); color:var(--bg)}
+  @media (max-width:700px){ .close .inner{grid-template-columns:minmax(0,1fr)} }
+
+  footer{border-top:1px solid var(--line-soft); padding-block:26px 40px; font-size:12.5px; color:var(--muted)}
+  footer .row{display:flex; gap:16px; flex-wrap:wrap; align-items:center}
+  footer .row span:last-child{margin-left:auto}
+
+  @media (prefers-reduced-motion:no-preference){
+    html{scroll-behavior:smooth}
+  }
+  @media print{
+    body{background:#fff; color:#111}
+    header,footer,.close .btn{display:none}
+    section{border-color:#ddd; break-inside:avoid}
+    a{color:#111}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+      <!-- at 30 px the full bracket frame collapses; the N and the diamond survive -->
+      <g fill="none" stroke="currentColor" stroke-linejoin="miter">
+        <path d="M28 24 L28 76 L64 24 L64 76" stroke-width="7"/>
+        <path d="M79 21 L85 27 L79 33 L73 27 Z" stroke-width="3.2" opacity=".85"/>
+      </g>
+    </svg>
+    <span class="name">Stockwatch</span>
+    <span class="ver">v1.6.1</span>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#setup">Set up</a>
+      <a href="#power">Power &amp; outages</a>
+      <a href="#accounts">Branch accounts</a>
+      <a href="#changes">Since 1.0</a>
+      <a href="#download">Download</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero wrap">
+  <div class="hero-grid">
+    <div>
+      <p class="eyebrow">Self-hosted inventory · your data stays on your machine</p>
+      <h1>Stock that tells you<br><em>what to order.</em></h1>
+      <p class="lede">
+        Stockwatch is an inventory dashboard for anyone who counts stock and hates running out:
+        a clinic, a pharmacy, a workshop, a shop, a garage, a kitchen. It watches how fast each item
+        actually moves, works out how many days of cover you have left, and puts the reorder
+        decision in front of you before the shelf is empty. It runs on one machine you already
+        own — no cloud account, no per-seat pricing, no data leaving the building.
+      </p>
+      <div class="facts">
+        <span><b>One file</b> of data: SQLite</span>
+        <span><b>~60 MB</b> of memory</span>
+        <span><b>Python 3.11+</b> and nothing else</span>
+        <span><b>Local-only</b> web app</span>
+      </div>
+      <p class="verticals"><span>For shelves of</span> clinics <i>·</i> pharmacies <i>·</i> workshops <i>·</i> shops <i>·</i> kitchens <i>·</i> and more</p>
+    </div>
+    <svg class="hero-art" viewBox="0 0 300 300" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-linejoin="miter">
+        <path d="M94 40 L40 40 L40 94" stroke-width="5" opacity=".45"/>
+        <path d="M206 40 L260 40 L260 94" stroke-width="5" opacity=".45"/>
+        <path d="M94 260 L40 260 L40 206" stroke-width="5" opacity=".45"/>
+        <path d="M206 260 L260 260 L260 206" stroke-width="5" opacity=".45"/>
+        <path d="M52 250 L228 52" stroke-width="2.6" opacity=".3"/>
+        <path d="M96 70 L96 230 L204 70 L204 230" stroke-width="9"/>
+        <path d="M240 46 L252 58 L240 70 L228 58 Z" stroke-width="3.4" opacity=".8"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<div class="strip">
+  <div class="wrap inner">
+    <p class="cap">What a row says · four different businesses</p>
+    <div class="tscroll">
+    <table class="rows">
+      <thead>
+        <tr>
+          <th>Item</th><th class="num">Cover</th><th class="num">On hand</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="item">Blood Tube 10mm<span class="sku">10301 · clinic</span></td>
+          <td class="num">8.4 d</td>
+          <td class="num">1,004 <span class="incoming">+200 <span>in 7d</span></span></td>
+          <td><span class="chip low">Low</span></td>
+        </tr>
+        <tr>
+          <td class="item">Amoxicillin 500 mg<span class="sku">PH-2291 · pharmacy</span></td>
+          <td class="num">11.2 d</td>
+          <td class="num">640 <span class="incoming">+300 <span>in 4d</span></span></td>
+          <td><span class="chip ok">OK</span></td>
+        </tr>
+        <tr>
+          <td class="item">Brake pad · Myvi<span class="sku">BRK-117 · workshop</span></td>
+          <td class="num">2.6 d</td>
+          <td class="num">18 <span class="incoming">+24 <span>in 5d</span></span></td>
+          <td><span class="chip low">Low</span></td>
+        </tr>
+        <tr>
+          <td class="item">A4 paper, 80 gsm<span class="sku">STN-004 · shop</span></td>
+          <td class="num">19.0 d</td>
+          <td class="num">240</td>
+          <td><span class="chip ok">OK</span></td>
+        </tr>
+      </tbody>
+    </table></div>
+    <p class="note">
+      Four verticals, one row shape — the arithmetic doesn't care what's in the box. The green
+      pill is stock that has been ordered but hasn't landed yet: amount, and how long until it
+      arrives. It never inflates the on-hand number — receiving a delivery is what moves stock,
+      and it lands in the movement log like any other change.
+    </p>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">How it works</p>
+      <h2>Four steps, and the fourth one is the point.</h2>
+      <p>Most inventory tools stop at a table of numbers. Stockwatch's job is the decision you make
+        on Monday morning, so the arithmetic runs on your own history rather than a guess.</p>
+    </div>
+
+    <div class="split">
+      <ol class="flow">
+        <li>
+          <h3>Bring the list in</h3>
+          <p>Import your spreadsheet — CSV or XLSX, straight from Excel, custom columns and all.
+            Every distinct supplier name becomes a record you can give a lead time to.</p>
+        </li>
+        <li>
+          <h3>Count what's on the shelf</h3>
+          <p>Type counts in the dashboard, or let the steppers do it at the shelf. Each change is a
+            timestamped movement — that log is what everything else is built from.</p>
+        </li>
+        <li>
+          <h3>Let it read your usage</h3>
+          <p>Daily rate over a rolling window, days of cover, and a spike detector that compares
+            the latest day against the 14-day baseline. Items with no count yet are marked
+            unknown, not zero.</p>
+        </li>
+        <li>
+          <h3>Order, schedule, receive</h3>
+          <p>Schedule the delivery with an amount and an estimate in days. It shows as
+            <span class="incoming">+200 <span>in 7d</span></span> until it arrives — then one
+            click adds it to stock and closes the loop.</p>
+        </li>
+      </ol>
+
+      <div>
+        <div class="callout">
+          <h3>It alerts you, so you don't have to look</h3>
+          <p>Every 15 minutes (configurable) it evaluates the whole catalogue and sends one digest
+            of everything below its reorder point — by email, by webhook into Slack or Teams, and
+            always into the in-app feed. No notification storm: one message per run, with the exact
+            numbers and the channel it used.</p>
+        </div>
+        <div class="callout">
+          <h3>People, with limits that fit a business</h3>
+          <p><b>Owner</b> runs accounts and settings. <b>Team leader</b> manages stock, inventory and
+            their own team. <b>Member</b> moves stock and nothing else. <b>Guest</b> reads. Access
+            is enforced on every request, not just hidden in the interface — and sign-ups ship
+            switched off.</p>
+        </div>
+        <div class="callout">
+          <h3>Exports that survive an accountant</h3>
+          <p>CSV and XLSX round-trip cleanly back into the app; the PDF is a one-page report.
+            The exports honour whatever filter and sort you're looking at.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Whatever you sell</p>
+      <h2>The arithmetic is the same; only the shelf changes.</h2>
+      <p>Daily rate, days of cover, lead time, a reorder point. That sentence describes a blood
+        bank, a pharmacy counter, a workshop bay and a stationery cupboard equally well — which is
+        why the app has no industry in it. Bring your own list, call the units whatever you call
+        them, and it works out the rest from your own movements.</p>
+    </div>
+
+    <div class="shelves">
+      <div class="shelf">
+        <h3>Clinics &amp; labs</h3>
+        <p class="eg">Blood Tube 10mm</p>
+        <p>Counted in units, ordered against a procedure week. Cover tells you whether Friday's
+          test list is safe before you print it.</p>
+      </div>
+      <div class="shelf">
+        <h3>Pharmacies</h3>
+        <p class="eg">Amoxicillin 500 mg</p>
+        <p>Boxes and strips move at very different rates; the per-item daily rate separates the
+          fast movers from the shelf-warmers. Expiry is the gap — see the limits below.</p>
+      </div>
+      <div class="shelf">
+        <h3>Workshops &amp; mechanics</h3>
+        <p class="eg">Brake pad · Myvi</p>
+        <p>One supplier, long lead times, sudden jobs. A per-supplier lead time turns "we'll have
+          it Tuesday" into a reorder point you don't have to remember.</p>
+      </div>
+      <div class="shelf">
+        <h3>Shops &amp; kitchens</h3>
+        <p class="eg">A4 paper, 80 gsm</p>
+        <p>Fast movers with noisy days. The spike detector compares today against the 14-day
+          baseline, so a busy Saturday doesn't quietly empty the shelf by Wednesday.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="changes">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Since 1.0</p>
+      <h2>It prices what you use,<br>and it can start over.</h2>
+      <p>Everything below arrived after the first release: panels that price the usage you already
+        record, a chart honest enough to show a bad week, and the two buttons that let an owner
+        wipe the box without phoning anyone. It all still fits in one tarball and one SQLite file.</p>
+    </div>
+    <div class="limits">
+      <div class="limit">
+        <h3>What the catalogue costs</h3>
+        <p>Usage priced at each item's own unit price, for a month or a year, with a per-category
+          breakdown. Usage is read from the movement log once an item has been drawn down on
+          <b>three or more separate days</b>; otherwise it falls back to that item's yearly
+          quantity. Stock on hand is never treated as a usage figure &mdash; one stock-take would
+          otherwise read as a month of runaway spending.</p>
+      </div>
+      <div class="limit">
+        <h3>A budget with two ends, and a counter you keep by hand</h3>
+        <p>Set a min&ndash;max budget per month or per year, in whatever currency you keep books in
+          (RM by default). <b>Balance after</b> shows what's left at both ends, and a coverage
+          calculator says how long the budget lasts at the current burn rate. The yearly spend
+          figure moves three ways &mdash; <b>Add</b> a payment, <b>Set</b> the exact number your
+          accounts show, or <b>Reset</b> for a new year &mdash; each move stamped with the date and
+          the account that made it. Touch it in one year and read it in the next and it says stale
+          instead of rolling over.</p>
+      </div>
+      <div class="limit">
+        <h3>Candles, when a line hides too much</h3>
+        <p>Line | Candles in the chart header. Each candle is one period of the window you picked:
+          open and close are the level at its start and end, the wick is how far it actually
+          reached. A delivery rises green, consumption falls red, and movement-free periods are
+          dimmed rather than drawn flat.</p>
+      </div>
+      <div class="limit">
+        <h3>Rename a category once</h3>
+        <p>Settings &rarr; Categories lists every category with its item count. Renaming moves every
+          item in it in a single write; rename onto a name that already exists and the two merge,
+          with the toast telling you how many items moved. A category is still a string on each
+          row, so a typo in an import is one rename from fixed instead of sixty edits.</p>
+      </div>
+      <div class="limit">
+        <h3>A danger zone that argues with you</h3>
+        <p>Owner only, two scopes: <b>Clear inventory</b> wipes stock, history and suppliers but
+          keeps accounts, teams and settings; <b>Factory reset</b> takes the whole thing back to the
+          first-run screen. Three things have to be right before anything is removed &mdash; your
+          password re-entered, the word DELETE typed out, and a backup ticked, which writes a copy
+          of the database first. A wrong password answers 403, so a dialog doesn't bounce you to the
+          sign-in page and lose its place.</p>
+      </div>
+      <div class="limit">
+        <h3>Hardened where it counts</h3>
+        <p>Passwords go through 600,000 PBKDF2-SHA256 rounds and are rehashed on the next sign-in
+          after a policy bump, with no forced resets. Ten characters minimum, the usual breach-list
+          guesses and your own username refused. Responses carry a Content-Security-Policy and a
+          Permissions-Policy; HSTS appears only when TLS is on. A state-changing request arriving
+          from another site is refused before it reaches a route, and the database file is 0600 from
+          the moment it is created.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="setup">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Set up</p>
+      <h2>One machine you already own, and about ten minutes.</h2>
+      <p>There is no build step and no database server to install. The whole footprint is a Python
+        environment of about 32 MB and a SQLite file that starts empty. Pick the route that matches
+        where it will live.</p>
+    </div>
+
+    <div class="tscroll">
+    <table class="routes">
+      <thead><tr><th>Route</th><th>What it's for</th><th>What you need</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Try it</td>
+          <td>See the thing running with demo data before deciding anything.</td>
+          <td class="who">Python 3.11+, five commands</td>
+        </tr>
+        <tr>
+          <td>One machine</td>
+          <td>The normal install: a front-desk PC, a NAS or a mini-PC in the office, started at boot by systemd.</td>
+          <td class="who">Linux, systemd, a user for the service</td>
+        </tr>
+        <tr>
+          <td>Server + TLS</td>
+          <td>Staff reach it from home through a browser with a real certificate — no VPN client to install.</td>
+          <td class="who">A small VPS, nginx, certbot</td>
+        </tr>
+        <tr>
+          <td>Windows</td>
+          <td>An installer for an office PC, bundling its own Python. Nothing else to install.</td>
+          <td class="who">Windows 10/11, the .exe</td>
+        </tr>
+        <tr>
+          <td>macOS</td>
+          <td>A Mac mini or iMac as the always-on box; launchd instead of systemd.</td>
+          <td class="who">Python 3.11+, any macOS that runs it</td>
+        </tr>
+        <tr>
+          <td>Another device</td>
+          <td>Not supported on purpose: the dashboard listens on loopback only, so the stock list never sits on a network.</td>
+          <td class="who">—</td>
+        </tr>
+      </tbody>
+    </table></div>
+
+    <div class="split">
+      <div>
+        <p class="eyebrow" style="margin-bottom:10px">The five-command version</p>
+        <pre><b>tar</b> -xzf stockwatch-1.6.1.tar.gz &amp;&amp; cd stockwatch-1.6.1
+<b>python3</b> -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt
+<b>./run.sh</b> --demo          <span style="color:var(--muted)"># seeds the demo inventory</span>
+<span style="color:var(--muted)"># open http://127.0.0.1:8123 — the setup form creates the owner account</span>
+<b>curl</b> -s localhost:8123/api/health   <span style="color:var(--muted)"># {"ok":true,"version":"1.6.1",…}</span></pre>
+        <p class="note" style="margin-top:12px; color:var(--muted); font-size:13px">
+          The first person to open the setup form becomes the owner. Accounts after that are made
+          by the owner from Settings → Access.
+        </p>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-bottom:10px">Before you hand it to anyone</p>
+        <ul class="check">
+          <li><b>Backups leave the machine.</b> A nightly job and a restore script ship with it; a
+            backup on the same disk protects you from a bad upgrade, not from a dead disk.</li>
+          <li><b>One hostname, one certificate.</b> Behind TLS, turn on <code>cookie_secure</code> so
+            the session cookie is marked Secure. Behind plain HTTP, leave it off.</li>
+          <li><b>A health probe.</b> <code>/api/health</code> answers without a session, so an uptime
+            monitor can watch it from somewhere else.</li>
+          <li><b>The owner's own password.</b> Not a default, not one you know.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="power">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Power &amp; outages</p>
+      <h2>A plain surge protector protects the hardware.<br>It does nothing for the outage.</h2>
+      <p>Plenty of small installations buy a power strip, feel prepared, and then discover the real
+        failure mode: the box is fine, but it's off, and nobody is in the building to press the
+        button. This is the part worth spending an afternoon on before go-live.</p>
+    </div>
+
+    <div class="power">
+      <div class="chain bad">
+        <h3>Surge protector only</h3>
+        <div class="nodes">
+          <span class="node dead">Mains</span><span class="arrow">→</span>
+          <span class="node dead">Strip</span><span class="arrow">→</span>
+          <span class="node dead">Box</span><span class="arrow">→</span>
+          <span class="node dead">Dashboard</span>
+        </div>
+        <p>Rides out nothing. A spike is absorbed; a two-second dip reboots the machine, and a
+          hard power cut mid-write is exactly the case SQLite's journal is there for — but the
+          dashboard is still gone until someone notices.</p>
+      </div>
+      <div class="chain good">
+        <h3>UPS + auto-restart</h3>
+        <div class="nodes">
+          <span class="node dead">Mains</span><span class="arrow">→</span>
+          <span class="node ups">UPS</span><span class="arrow">→</span>
+          <span class="node">Box</span><span class="arrow">→</span>
+          <span class="node">Dashboard</span>
+        </div>
+        <p>A small 600 VA unit keeps a 60 MB process and a monitor-less mini-PC alive for far
+          longer than a brownout lasts, and it rides out the flicker that reboots a bare strip.
+          Add <code>Restart=on-failure</code> and enabling at boot, and the box comes back on its
+          own after a real cut.</p>
+      </div>
+    </div>
+
+    <div class="split">
+      <div>
+        <p class="eyebrow" style="margin-bottom:12px">The outage checklist</p>
+        <ul class="check">
+          <li><b>UPS on the box, not on the desk lamp.</b> One outlet, sized to the machine — a
+            600 VA unit is generous for this workload.</li>
+          <li><b>Service enabled at boot</b> with <code>Restart=on-failure</code>. That is the
+            difference between "it came back" and "it needs a person".</li>
+          <li><b>Nightly backup to a different machine.</b> The database is one file; a restore is
+            a copy and a restart, not a project.</li>
+          <li><b>An uptime probe from outside</b> hitting <code>/api/health</code>, so you learn
+            about the outage before a branch does.</li>
+          <li><b>A named person who can reboot it</b> at 9pm. Decide that before selling, because
+            you will be making that call.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout">
+          <h3>What it does not have</h3>
+          <p>There is no high availability: one box, one database file, one writer. That is a
+            deliberate trade for running on hardware a clinic can afford. If the box is down, the
+            dashboard is down — so the UPS, the backup and the reboot plan are not extras, they are
+            the availability story.</p>
+        </div>
+        <div class="callout">
+          <h3>What survives a cut</h3>
+          <p>SQLite in WAL mode with a per-write transaction: a power loss mid-write rolls back to
+            the last committed change, and the movement log is the same journal. Expect to lose at
+            most the single action that was in flight — not the day's counts.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="accounts">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Branch accounts</p>
+      <h2>One account per branch, named so the audit log reads like a map.</h2>
+      <p>Stockwatch uses an email-shaped identifier to sign in, and prints it next to every change
+        it records. That makes the naming scheme an operational decision, not a cosmetic one: pick
+        it before the first branch is created and the movement log stays readable for years.</p>
+    </div>
+
+    <div class="scheme">
+      <div>
+        <p class="eyebrow" style="margin-bottom:10px">A scheme that sorts</p>
+        <pre><b>{branch}{sequence}</b>@{your-domain}
+
+yourcoKL001@yourco.my      <span style="color:var(--muted)"># Kuala Lumpur, first account</span>
+yourcoPERAK001@yourco.my   <span style="color:var(--muted)"># Perak</span>
+yourcoPERAK002@yourco.my   <span style="color:var(--muted)"># Perak, second person</span>
+yourcoJH001@yourco.my      <span style="color:var(--muted)"># Johor</span></pre>
+        <div class="callout">
+          <h3>Use a domain you own</h3>
+          <p><code>@email.com</code> is not a domain anyone can register — the examples above use
+            your own domain instead. It matters for a practical reason: password-reset links and
+            alert digests are delivered to that address, so it has to be a mailbox that exists.
+            If you don't want a mailbox per branch, a catch-all or plus-addressing
+            (<code>it+kl001@…</code>) on one domain works, as long as the address stays identical
+            everywhere it's typed.</p>
+        </div>
+      </div>
+
+      <div>
+        <p class="eyebrow" style="margin-bottom:10px">Codes worth standardising</p>
+        <div class="tscroll">
+    <table class="branch">
+          <thead><tr><th>Code</th><th>Branch</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td>KL</td><td class="state">Kuala Lumpur</td><td>…KL001@</td></tr>
+            <tr><td>SEL</td><td class="state">Selangor</td><td>…SEL001@</td></tr>
+            <tr><td>PERAK</td><td class="state">Perak</td><td>…PERAK001@</td></tr>
+            <tr><td>PEN</td><td class="state">Penang</td><td>…PEN001@</td></tr>
+            <tr><td>JH</td><td class="state">Johor</td><td>…JH001@</td></tr>
+            <tr><td>PHG</td><td class="state">Pahang</td><td>…PHG001@</td></tr>
+            <tr><td>SBH</td><td class="state">Sabah</td><td>…SBH001@</td></tr>
+            <tr><td>SWK</td><td class="state">Sarawak</td><td>…SWK001@</td></tr>
+          </tbody>
+        </table></div>
+        <p class="note" style="margin-top:12px; color:var(--muted); font-size:13px">
+          Three or four letters, uppercase, no punctuation. The sequence is two digits, so branch
+          number ten (010) still sorts after nine.
+        </p>
+      </div>
+    </div>
+
+    <div class="split">
+      <div>
+        <p class="eyebrow" style="margin-bottom:12px">How the roles line up</p>
+        <ul class="check">
+          <li><b>Owner</b> — the company, not a branch. This is the only account that can create
+            users and teams, so it should be a head-office address, not the busiest branch.</li>
+          <li><b>Team leader</b> — one per branch. Runs that branch's stock and adds or removes
+            its members. Cannot create accounts.</li>
+          <li><b>Member</b> — the staff at the shelf. Stock movements only.</li>
+          <li><b>Guest</b> — an auditor or locum who needs to read and nothing else.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout">
+          <h3>One team per branch</h3>
+          <p>Create a team per branch with that branch's manager as its leader. Grouping and the
+            activity view then read per branch without a custom column, and offboarding is one
+            action: remove the person from the team, then disable the account.</p>
+        </div>
+        <div class="callout">
+          <h3>What an address buys you</h3>
+          <p>The activity feed and every movement row carry the account that made them. With a
+            branch code in the address, "who cut 400 tubes on Tuesday" is answerable from the log
+            without a lookup table.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Honest limits</p>
+      <h2>What it doesn't do, so nobody finds out later.</h2>
+    </div>
+    <div class="limits">
+      <div class="limit">
+        <h3>No lot or expiry tracking</h3>
+        <p>Nothing in the model knows a unit can spoil. If expiry dates matter — and in a clinic
+          or a pharmacy they usually do — that is a feature to add, not a setting. Until then,
+          keep the lot and expiry on the box.</p>
+      </div>
+      <div class="limit">
+        <h3>Day boundaries are UTC</h3>
+        <p>Usage buckets and spike windows roll over on UTC days, so a branch eight hours ahead
+          sees "today" start at 08:00 local. Consistent, but worth knowing.</p>
+      </div>
+      <div class="limit">
+        <h3>One lead time per supplier</h3>
+        <p>A vendor that ships some lines in three days and others in thirty needs either a
+          per-item override or two supplier records.</p>
+      </div>
+      <div class="limit">
+        <h3>One writer</h3>
+        <p>SQLite and a single process: comfortable for tens of users and thousands of items, not
+          a platform for hundreds of concurrent writers.</p>
+      </div>
+      <div class="limit">
+        <h3>Exports exclude incoming stock</h3>
+        <p>CSV, XLSX and PDF show what is on the shelf. Scheduled deliveries live in the dashboard
+          until they are received.</p>
+      </div>
+      <div class="limit">
+        <h3>Costs are an estimate, not a ledger</h3>
+        <p>The cost panel multiplies measured usage by each item's current unit price, so a price
+          change rewrites history and an item with no price is counted as unpriced rather than
+          guessed at. The yearly spend figure is typed in by a person. Treat both as a steer on
+          spending, not as something to reconcile your accounts against.</p>
+      </div>
+      <div class="limit">
+        <h3>You are the update channel</h3>
+        <p>No auto-update, no telemetry, no phone-home. Upgrades are a tarball and a restart, done
+          deliberately.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="close" id="download">
+  <div class="wrap inner">
+    <div>
+      <h2>Run it on a machine you already have.</h2>
+      <p>Stockwatch 1.6.1 ships with its test suite, a verified backup and restore, systemd and
+        launchd units, nginx deployment files, and a distribution guide that covers install,
+        upgrade and recovery. The database never leaves your hardware.</p>
+      <p class="dl-note">Not sure which one? <a href="#setup">Read the setup steps</a> first —
+        the Linux and macOS build is the same archive, installed with systemd or launchd.</p>
+    </div>
+    <div>
+      <div class="downs">
+        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>Linux</b><span>.tar.gz · systemd · by request</span></a>
+        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>macOS</b><span>.tar.gz · launchd · by request</span></a>
+        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>Windows</b><span>.exe installer · by request</span></a>
+      </div>
+      <p class="dl-note">The build is private: write to <a href="mailto:nxautomation003@gmail.com">nxautomation003@gmail.com</a>, say which platform and where it will run, and you get the archive with the install steps · v1.6.1 · 140 KB archive, 11 MB installer</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap row">
+    <span>Stockwatch v1.6.1</span>
+    <span>·</span>
+    <span>NxGenWidgeter</span>
+    <span>Self-hosted · SQLite · Python</span>
+  </div>
+</footer>
+
+
+</body>
+</html>
