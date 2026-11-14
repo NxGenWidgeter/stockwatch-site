@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stockwatch — inventory that tells you what to order</title>
-<meta name="description" content="Stockwatch is a self-hosted inventory dashboard for anyone who counts stock — clinics, pharmacies, workshops, shops. It tracks usage, cover and incoming deliveries, and tells you what to reorder before you run out.">
+<title>Stockwatch — inventory that tells you what to order, and what it costs</title>
+<meta name="description" content="Stockwatch is a self-hosted inventory dashboard: movements, days of cover, reorder points from real usage, scheduled deliveries, cost and budget, alerts, imports and PDF/Excel exports. One machine, local only. Bundles for a single shop up to a multi-site group.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230d0b09'/%3E%3Cg fill='none' stroke='%23e7c97f' stroke-width='3'%3E%3Cpath d='M34 27 L34 73 L66 27 L66 73'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root{
@@ -221,6 +221,64 @@
     section{border-color:#ddd; break-inside:avoid}
     a{color:#111}
   }
+
+  /* ---------- feature grid ---------- */
+  .feats{display:grid; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); gap:26px 30px;
+    margin-top:clamp(26px,3.4vw,44px)}
+  .feat{border-top:1px solid var(--line); padding-top:14px}
+  .feat .lab{display:block; font-family:var(--mono); font-size:10px; letter-spacing:.13em;
+    text-transform:uppercase; color:var(--accent-deep); margin-bottom:6px}
+  .feat h3{font-family:var(--sans); font-size:15px; font-weight:600; margin-bottom:6px}
+  .feat p{font-size:13.5px; color:var(--body)}
+  .feat p b{color:var(--ink); font-weight:600}
+  .feat code{font-family:var(--mono); font-size:12px; color:var(--accent-deep); white-space:nowrap}
+
+  /* ---------- a week ---------- */
+  .week{list-style:none; margin:clamp(26px,3.4vw,44px) 0 0; padding:0 0 0 4px; margin-left:6px;
+    border-left:1px solid var(--line)}
+  .week li{position:relative; padding:0 0 28px 30px}
+  .week li::before{content:""; position:absolute; left:-4.5px; top:6px; width:9px; height:9px;
+    border-radius:50%; background:var(--bg); border:1.5px solid var(--accent)}
+  .week li:last-child{padding-bottom:0}
+  .week .when{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent-deep)}
+  .week h3{font-family:var(--sans); font-size:15.5px; font-weight:600; margin:5px 0 6px}
+  .week p{font-size:14.5px; max-width:68ch}
+  .week p b{color:var(--ink); font-weight:600}
+
+  /* ---------- bundles ---------- */
+  .bundles{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;
+    margin-top:clamp(26px,3.4vw,44px); align-items:stretch}
+  @media (max-width:940px){ .bundles{grid-template-columns:minmax(0,1fr)} }
+  .bundle{border:1px solid var(--line); border-radius:12px; background:var(--surface);
+    padding:22px 22px 24px; display:flex; flex-direction:column}
+  .bundle.pick{border-color:rgba(231,201,127,.55);
+    background:linear-gradient(180deg, var(--accent-wash), var(--surface) 55%)}
+  .bundle .tag{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted)}
+  .bundle.pick .tag{color:var(--accent-deep)}
+  .bundle h3{font-size:23px; margin:9px 0 4px; min-height:30px}
+  .bundle .for{font-size:13px; color:var(--muted); min-height:58px}
+  .bundle .price{font-family:var(--serif); font-size:40px; line-height:1; color:var(--ink); margin-top:16px}
+  .bundle .price small{display:block; font-family:var(--sans); font-size:11.5px; letter-spacing:0;
+    color:var(--muted); margin-top:7px}
+  .bundle ul{list-style:none; margin:18px 0 0; padding:16px 0 0; font-size:13.5px; flex:1;
+    border-top:1px solid var(--line-soft)}
+  .bundle li{position:relative; padding:0 0 10px 20px}
+  .bundle li::before{content:""; position:absolute; left:2px; top:6px; width:9px; height:5px;
+    border-left:1.5px solid var(--accent); border-bottom:1.5px solid var(--accent);
+    transform:rotate(-45deg)}
+  .bundle li b{color:var(--ink); font-weight:600}
+  .bundle .cta{margin-top:18px}
+  .bundle .btn{display:block; text-align:center}
+  .bundle .btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+  .bundle .btn.ghost:hover{border-color:var(--accent); background:var(--accent-wash); color:var(--ink)}
+  .fineprint{margin-top:22px; font-size:12.5px; color:var(--muted); max-width:78ch}
+  .fineprint b{color:var(--body); font-weight:600}
+
+  @media (max-width:700px){
+    .week li{padding-left:22px}
+  }
 </style>
 </head>
 <body>
@@ -237,12 +295,11 @@
     <span class="name">Stockwatch</span>
     <span class="ver">v1.6.1</span>
     <nav>
-      <a href="#how">How it works</a>
+      <a href="#what">What it does</a>
+      <a href="#week">A week with it</a>
+      <a href="#bundles">Bundles</a>
       <a href="#setup">Set up</a>
-      <a href="#power">Power &amp; outages</a>
-      <a href="#accounts">Branch accounts</a>
-      <a href="#changes">Since 1.0</a>
-      <a href="#download">Download</a>
+      <a href="#get">Get it</a>
     </nav>
   </div>
 </header>
@@ -250,22 +307,24 @@
 <div class="hero wrap">
   <div class="hero-grid">
     <div>
-      <p class="eyebrow">Self-hosted inventory · your data stays on your machine</p>
+      <p class="eyebrow">Self-hosted inventory · one machine · your data stays in the building</p>
       <h1>Stock that tells you<br><em>what to order.</em></h1>
       <p class="lede">
         Stockwatch is an inventory dashboard for anyone who counts stock and hates running out:
-        a clinic, a pharmacy, a workshop, a shop, a garage, a kitchen. It watches how fast each item
-        actually moves, works out how many days of cover you have left, and puts the reorder
-        decision in front of you before the shelf is empty. It runs on one machine you already
-        own — no cloud account, no per-seat pricing, no data leaving the building.
+        a clinic, a pharmacy, a workshop, a shop, a lab, a kitchen, a store room. It records every
+        movement in and out, learns how fast each item actually goes, turns that into days of
+        cover, keeps what is on order apart from what is on the shelf, prices what you use against
+        a budget — and puts the reorder decision in front of you before the shelf is empty. It runs
+        on one machine you already own: no cloud account, no per-seat subscription, nothing leaving
+        the building.
       </p>
       <div class="facts">
         <span><b>One file</b> of data: SQLite</span>
         <span><b>~60 MB</b> of memory</span>
-        <span><b>Python 3.11+</b> and nothing else</span>
-        <span><b>Local-only</b> web app</span>
+        <span><b>Python 3.11+</b> or the Windows installer</span>
+        <span><b>Loopback only</b>, enforced in code</span>
       </div>
-      <p class="verticals"><span>For shelves of</span> clinics <i>·</i> pharmacies <i>·</i> workshops <i>·</i> shops <i>·</i> kitchens <i>·</i> and more</p>
+      <p class="verticals"><span>For shelves of</span> clinics <i>·</i> pharmacies <i>·</i> workshops <i>·</i> shops <i>·</i> kitchens <i>·</i> labs <i>·</i> and store rooms</p>
     </div>
     <svg class="hero-art" viewBox="0 0 300 300" aria-hidden="true">
       <g fill="none" stroke="currentColor" stroke-linejoin="miter">
@@ -283,7 +342,7 @@
 
 <div class="strip">
   <div class="wrap inner">
-    <p class="cap">What a row says · four different businesses</p>
+    <p class="cap">A morning's rows · four different businesses, one screen</p>
     <div class="tscroll">
     <table class="rows">
       <thead>
@@ -299,195 +358,320 @@
           <td><span class="chip low">Low</span></td>
         </tr>
         <tr>
-          <td class="item">Amoxicillin 500 mg<span class="sku">PH-2291 · pharmacy</span></td>
-          <td class="num">11.2 d</td>
-          <td class="num">640 <span class="incoming">+300 <span>in 4d</span></span></td>
-          <td><span class="chip ok">OK</span></td>
+          <td class="item">Amoxicillin 500mg<span class="sku">PH-2204 · pharmacy</span></td>
+          <td class="num">21 d</td>
+          <td class="num">340</td>
+          <td><span class="chip ok">Healthy</span></td>
         </tr>
         <tr>
-          <td class="item">Brake pad · Myvi<span class="sku">BRK-117 · workshop</span></td>
-          <td class="num">2.6 d</td>
-          <td class="num">18 <span class="incoming">+24 <span>in 5d</span></span></td>
-          <td><span class="chip low">Low</span></td>
+          <td class="item">O-ring assortment<span class="sku">WS-9931 · workshop</span></td>
+          <td class="num">2.1 d</td>
+          <td class="num">12</td>
+          <td><span class="chip low">Out</span></td>
         </tr>
         <tr>
-          <td class="item">A4 paper, 80 gsm<span class="sku">STN-004 · shop</span></td>
-          <td class="num">19.0 d</td>
-          <td class="num">240</td>
-          <td><span class="chip ok">OK</span></td>
+          <td class="item">Nitrile gloves, M<span class="sku">SH-4410 · shop</span></td>
+          <td class="num">46 d</td>
+          <td class="num">2,880 <span class="incoming">+1,000 <span>in 5d</span></span></td>
+          <td><span class="chip ok">Healthy</span></td>
         </tr>
       </tbody>
-    </table></div>
-    <p class="note">
-      Four verticals, one row shape — the arithmetic doesn't care what's in the box. The green
-      pill is stock that has been ordered but hasn't landed yet: amount, and how long until it
-      arrives. It never inflates the on-hand number — receiving a delivery is what moves stock,
-      and it lands in the movement log like any other change.
-    </p>
+    </table>
+    </div>
+    <p class="note">Cover is stock ÷ how fast the item actually moves — the number a buyer acts on.
+      The green pill is stock that has been ordered and not yet arrived; it never inflates the shelf figure.</p>
   </div>
 </div>
 
-<section id="how">
+<section id="what">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow">How it works</p>
-      <h2>Four steps, and the fourth one is the point.</h2>
-      <p>Most inventory tools stop at a table of numbers. Stockwatch's job is the decision you make
-        on Monday morning, so the arithmetic runs on your own history rather than a guess.</p>
+      <p class="eyebrow">The whole product, no gaps</p>
+      <h2>Twenty things it does,<br>in the order they matter.</h2>
+      <p>Everything below is in the one build. No add-ons, no modules to unlock, no API key:
+        the same software runs your shelf whether you count three hundred items or thirty thousand.</p>
     </div>
 
-    <div class="split">
-      <ol class="flow">
-        <li>
-          <h3>Bring the list in</h3>
-          <p>Import your spreadsheet — CSV or XLSX, straight from Excel, custom columns and all.
-            Every distinct supplier name becomes a record you can give a lead time to.</p>
-        </li>
-        <li>
-          <h3>Count what's on the shelf</h3>
-          <p>Type counts in the dashboard, or let the steppers do it at the shelf. Each change is a
-            timestamped movement — that log is what everything else is built from.</p>
-        </li>
-        <li>
-          <h3>Let it read your usage</h3>
-          <p>Daily rate over a rolling window, days of cover, and a spike detector that compares
-            the latest day against the 14-day baseline. Items with no count yet are marked
-            unknown, not zero.</p>
-        </li>
-        <li>
-          <h3>Order, schedule, receive</h3>
-          <p>Schedule the delivery with an amount and an estimate in days. It shows as
-            <span class="incoming">+200 <span>in 7d</span></span> until it arrives — then one
-            click adds it to stock and closes the loop.</p>
-        </li>
-      </ol>
-
-      <div>
-        <div class="callout">
-          <h3>It alerts you, so you don't have to look</h3>
-          <p>Every 15 minutes (configurable) it evaluates the whole catalogue and sends one digest
-            of everything below its reorder point — by email, by webhook into Slack or Teams, and
-            always into the in-app feed. No notification storm: one message per run, with the exact
-            numbers and the channel it used.</p>
-        </div>
-        <div class="callout">
-          <h3>People, with limits that fit a business</h3>
-          <p><b>Owner</b> runs accounts and settings. <b>Team leader</b> manages stock, inventory and
-            their own team. <b>Member</b> moves stock and nothing else. <b>Guest</b> reads. Access
-            is enforced on every request, not just hidden in the interface — and sign-ups ship
-            switched off.</p>
-        </div>
-        <div class="callout">
-          <h3>Exports that survive an accountant</h3>
-          <p>CSV and XLSX round-trip cleanly back into the app; the PDF is a one-page report.
-            The exports honour whatever filter and sort you're looking at.</p>
-        </div>
+    <div class="feats">
+      <div class="feat">
+        <span class="lab">Movements</span>
+        <h3>Every change is a row</h3>
+        <p>Stock in, stock out, a count, an import, a delivery marked arrived — each writes a
+          movement with who, when and why. Changes are <b>atomic</b>, so two people pressing
+          &minus;1 at the same moment cannot lose a count.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Cover</span>
+        <h3>Days of cover, not just a number</h3>
+        <p>Every row shows stock ÷ daily use and turns amber when it is inside the lead-time
+          window. “Nine days left” is a decision; “three thousand units” is not.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Reorder</span>
+        <h3>Reorder points you can defend</h3>
+        <p><b>Fill missing reorder points</b> sets each one from its own usage:
+          daily rate × (lead time + safety days). A number you type by hand always wins, and an
+          item with no threshold never fires a false alarm.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">On order</span>
+        <h3>Ordered and arrived are two numbers</h3>
+        <p>Scheduled stock sits beside the shelf figure as <code>+24 · in 5d</code>, amber once it
+          slips. You enter the wait in <b>days</b>, the board shows the date, and only
+          <b>mark arrived</b> adds it to stock — through the movement log.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Suppliers</span>
+        <h3>Lead times live on the vendor</h3>
+        <p>Every distinct vendor in your workbook becomes a supplier record. Set the delivery days
+          once and every item from that vendor inherits them; anything without one falls back to
+          your default.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Attention</span>
+        <h3>Low, out, healthy — one click</h3>
+        <p>Per-item thresholds, filter chips with live counts, red rows, an <b>OUT</b> badge at
+          zero, and a sort that puts the worst first. An imported item with no stock column reads
+          <b>no count</b>, never a fake zero.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Anomalies</span>
+        <h3>Usage spikes found for you</h3>
+        <p>The latest active day is compared with the 14-day average: a spike must clear it by
+          <b>75%</b> and mean + 2σ, on at least three units of normal use. Flagged on the row,
+          marked on the chart, and sent in the same digest as low stock.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">History</span>
+        <h3>A stock chart, and candles</h3>
+        <p>Click a row and the panel plots its level over 7, 30 or 90 days with the reorder line,
+          a hover read-out of each movement and a marker where a spike was detected. Switch to
+          candle mode and the same series reads as open/high/low/close buckets. Every row also
+          carries a 30-day sparkline.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Money</span>
+        <h3>What it costs to use</h3>
+        <p>Usage is priced at unit price, per item, per category and in total, by month or year,
+          with a <b>budget range</b> that turns into “days of cover at this budget”. The yearly
+          counter is typed from the accountant's figure and never guessed from movements.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Housekeeping</span>
+        <h3>Categories renamed once</h3>
+        <p>A category is a string on each row, so renaming is one action for all sixty items —
+          and renaming onto a name that already exists merges the two and tells you how many
+          moved.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Your workbook</span>
+        <h3>Columns you didn't configure</h3>
+        <p>Any header the importer does not recognise becomes a <b>custom column</b> (text or
+          number) instead of being dropped. Values survive export → edit → re-import and go with
+          the column when you delete it.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Working the list</span>
+        <h3>Group, subtotal, bulk edit</h3>
+        <p>Group by category, supplier, status or a custom column; each group carries its own
+          item, unit and value subtotal and its checkbox selects the lot. Set category, supplier,
+          reorder point or cover days across every ticked row at once — or delete them.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Import</span>
+        <h3>Their sheet, not ours</h3>
+        <p><code>.xlsx</code> and <code>.csv</code>, matched by header name (<i>Item Code</i>,
+          <i>Description</i>, <i>Qty</i>, <i>Reorder Point</i>, <i>Vendor</i>…), a title row
+          tolerated, thousands separators and currency symbols cleaned, rows upserted on SKU.
+          No <code>openpyxl</code> needed on the server.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Export</span>
+        <h3>CSV, Excel, and a PDF</h3>
+        <p>All three honour the current filter, so <b>Low</b> + PDF is a one-page order list with
+          totals and your own columns. Excel is written by hand, so it opens in Excel and WPS
+          without a repair prompt.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Alerts</span>
+        <h3>Email, webhook, or the feed</h3>
+        <p>A background check runs every 15 minutes (yours to change) and sends <b>one digest</b>
+          per run: SMTP email to any number of recipients, a JSON POST for Slack or Teams, and
+          always the in-app feed with the channels it actually used. With SMTP off, the digest is
+          written to <code>data/outbox/*.eml</code> so you can read it before going live.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">People</span>
+        <h3>Four roles, real ones</h3>
+        <p><b>Owner</b>, <b>leader</b> (of a team), <b>member</b> and <b>guest</b> — read-only, no
+          stepper, no checkbox. Owners create accounts and teams; a leader adds their own people
+          to their own team. Sign-up is off by default, an allowlist can gate it further, and
+          sessions can be cut from the users panel.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Record</span>
+        <h3>An audit trail that answers “who”</h3>
+        <p>Every write is logged with the account that made it: who took the stock out, who
+          edited the price, who deleted the line, who cleared the whole inventory. The feed is in
+          the dashboard and on the API.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Safety net</span>
+        <h3>Backup and a tested restore</h3>
+        <p>One SQLite file holds everything. The shipped scripts take a consistent snapshot of a
+          <b>running</b> instance and verify a restore; a nightly timer keeps 30 of them on this
+          machine. The database is owner-only on disk.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Security</span>
+        <h3>Local only, and it means it</h3>
+        <p>The launcher refuses any address but loopback and the app answers <b>403</b> to
+          anything that did not arrive over it — so a hand-started server still serves nothing.
+          PBKDF2-SHA256 at 600,000 rounds, rehashed on login; CSP, CSRF checks and no-store
+          headers on every response.</p>
+      </div>
+      <div class="feat">
+        <span class="lab">Finishing touches</span>
+        <h3>Five looks, installable, printable</h3>
+        <p>Dark, light, gold, parchment or follow-the-system, applied before first paint and
+          remembered per browser. It installs to the desktop from the browser, and every list can
+          be exported or printed.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section>
+<section id="week">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow">Whatever you sell</p>
-      <h2>The arithmetic is the same; only the shelf changes.</h2>
-      <p>Daily rate, days of cover, lead time, a reorder point. That sentence describes a blood
-        bank, a pharmacy counter, a workshop bay and a stationery cupboard equally well — which is
-        why the app has no industry in it. Bring your own list, call the units whatever you call
-        them, and it works out the rest from your own movements.</p>
+      <p class="eyebrow">Practical use</p>
+      <h2>What a week actually looks like.</h2>
+      <p>Not a feature tour — six moments where the board pays for itself. This is the loop a stock
+        controller runs with Stockwatch on one screen.</p>
     </div>
 
-    <div class="shelves">
-      <div class="shelf">
-        <h3>Clinics &amp; labs</h3>
-        <p class="eg">Blood Tube 10mm</p>
-        <p>Counted in units, ordered against a procedure week. Cover tells you whether Friday's
-          test list is safe before you print it.</p>
-      </div>
-      <div class="shelf">
-        <h3>Pharmacies</h3>
-        <p class="eg">Amoxicillin 500 mg</p>
-        <p>Boxes and strips move at very different rates; the per-item daily rate separates the
-          fast movers from the shelf-warmers. Expiry is the gap — see the limits below.</p>
-      </div>
-      <div class="shelf">
-        <h3>Workshops &amp; mechanics</h3>
-        <p class="eg">Brake pad · Myvi</p>
-        <p>One supplier, long lead times, sudden jobs. A per-supplier lead time turns "we'll have
-          it Tuesday" into a reorder point you don't have to remember.</p>
-      </div>
-      <div class="shelf">
-        <h3>Shops &amp; kitchens</h3>
-        <p class="eg">A4 paper, 80 gsm</p>
-        <p>Fast movers with noisy days. The spike detector compares today against the 14-day
-          baseline, so a busy Saturday doesn't quietly empty the shelf by Wednesday.</p>
-      </div>
-    </div>
+    <ol class="week">
+      <li>
+        <span class="when">Monday, 08:10</span>
+        <h3>The order run</h3>
+        <p>Filter to <b>Low</b>, sort worst first, and read the cover column: nine days, four
+          days, two days. Tick the rows you are ordering, <b>Export PDF</b> and the one-page list
+          goes to the supplier with quantities and totals on it — no spreadsheet, no retyping.</p>
+      </li>
+      <li>
+        <span class="when">Monday, 08:25</span>
+        <h3>What is already coming</h3>
+        <p>Before ordering, the green pills say what is on the way and when. Add the new
+          deliveries in <b>days</b> (the supplier's lead time fills the field), and the item now
+          shows shelf + on order as two separate numbers. Nothing arrives early by accident.</p>
+      </li>
+      <li>
+        <span class="when">Wednesday, 11:00</span>
+        <h3>A delivery lands</h3>
+        <p>Open the item, press <b>arrived</b> on that delivery. Stock goes up, a movement row
+          records who did it and that it came from a scheduled order, cover recalculates, and the
+          green pill disappears. If it was late, it was amber before you clicked.</p>
+      </li>
+      <li>
+        <span class="when">Friday, 16:00</span>
+        <h3>The count</h3>
+        <p>Type the counted figure into the stepper; each change is a movement like any other, so
+          the variance is explainable and the usage graph keeps its shape. A shelf that has been
+          quietly walked off with shows up as a <b>spike</b> on the row and the chart.</p>
+      </li>
+      <li>
+        <span class="when">Month end</span>
+        <h3>The number for the meeting</h3>
+        <p>The cost panel prices the month's usage per category, shows what is left of the budget
+          and how many days that buys. The yearly counter takes the accountant's figure and keeps
+          a running total against the year's budget — a statement, not a guess.</p>
+      </li>
+      <li>
+        <span class="when">When something changes</span>
+        <h3>A person leaves, a branch opens</h3>
+        <p>Cut their session and their account; the audit trail keeps what they did. A new branch
+          is a team and an account named for it (<code>perak001@yourcompany.my</code>), so every
+          movement and every alert says which shelf it came from.</p>
+      </li>
+    </ol>
   </div>
 </section>
 
-<section id="changes">
+<section id="bundles">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow">Since 1.0</p>
-      <h2>It prices what you use,<br>and it can start over.</h2>
-      <p>Everything below arrived after the first release: panels that price the usage you already
-        record, a chart honest enough to show a bad week, and the two buttons that let an owner
-        wipe the box without phoning anyone. It all still fits in one tarball and one SQLite file.</p>
+      <p class="eyebrow">Bundles</p>
+      <h2>One product, three sizes of licence.</h2>
+      <p>The software is identical in every bundle — there are no features held back. What changes
+        is the scale you are licensed to run, how long updates are included, and how much of the
+        setup we do with you. All prices in USD, one-time, per installation.</p>
     </div>
-    <div class="limits">
-      <div class="limit">
-        <h3>What the catalogue costs</h3>
-        <p>Usage priced at each item's own unit price, for a month or a year, with a per-category
-          breakdown. Usage is read from the movement log once an item has been drawn down on
-          <b>three or more separate days</b>; otherwise it falls back to that item's yearly
-          quantity. Stock on hand is never treated as a usage figure &mdash; one stock-take would
-          otherwise read as a month of runaway spending.</p>
+
+    <div class="bundles">
+      <div class="bundle">
+        <span class="tag">Beginner</span>
+        <h3>One room, one shelf</h3>
+        <p class="for">A clinic, a workshop or a single shop that orders every week or two.</p>
+        <p class="price">$249<small>one-time · up to 300 items · 3 accounts</small></p>
+        <ul>
+          <li>The <b>whole product</b> — every feature on this page</li>
+          <li>Up to <b>300 items</b>, one site</li>
+          <li><b>3 accounts</b> (owner + two people)</li>
+          <li><b>12 months</b> of updates</li>
+          <li>Email support, 2 business days</li>
+          <li>Your first import checked with you</li>
+        </ul>
+        <p class="cta"><a class="btn ghost" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20Beginner%20bundle">Ask about Beginner</a></p>
       </div>
-      <div class="limit">
-        <h3>A budget with two ends, and a counter you keep by hand</h3>
-        <p>Set a min&ndash;max budget per month or per year, in whatever currency you keep books in
-          (RM by default). <b>Balance after</b> shows what's left at both ends, and a coverage
-          calculator says how long the budget lasts at the current burn rate. The yearly spend
-          figure moves three ways &mdash; <b>Add</b> a payment, <b>Set</b> the exact number your
-          accounts show, or <b>Reset</b> for a new year &mdash; each move stamped with the date and
-          the account that made it. Touch it in one year and read it in the next and it says stale
-          instead of rolling over.</p>
+
+      <div class="bundle pick">
+        <span class="tag">Business · most chosen</span>
+        <h3>A working warehouse</h3>
+        <p class="for">A store room with several people, suppliers on lead times and a monthly
+          budget to stay inside.</p>
+        <p class="price">$690<small>one-time · up to 5,000 items · 15 accounts</small></p>
+        <ul>
+          <li>Everything in Beginner, plus:</li>
+          <li>Up to <b>5,000 items</b>, up to <b>3 sites</b> on one install</li>
+          <li><b>15 accounts</b> with teams and leaders</li>
+          <li><b>Scheduled stock</b>, supplier lead times, cost &amp; budget</li>
+          <li><b>12 months</b> of updates</li>
+          <li>Priority support, 1 business day</li>
+          <li>Remote install and your workbook converted</li>
+          <li>Backup and restore set up and tested with you</li>
+        </ul>
+        <p class="cta"><a class="btn" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20Business%20bundle">Ask about Business</a></p>
       </div>
-      <div class="limit">
-        <h3>Candles, when a line hides too much</h3>
-        <p>Line | Candles in the chart header. Each candle is one period of the window you picked:
-          open and close are the level at its start and end, the wick is how far it actually
-          reached. A delivery rises green, consumption falls red, and movement-free periods are
-          dimmed rather than drawn flat.</p>
-      </div>
-      <div class="limit">
-        <h3>Rename a category once</h3>
-        <p>Settings &rarr; Categories lists every category with its item count. Renaming moves every
-          item in it in a single write; rename onto a name that already exists and the two merge,
-          with the toast telling you how many items moved. A category is still a string on each
-          row, so a typo in an import is one rename from fixed instead of sixty edits.</p>
-      </div>
-      <div class="limit">
-        <h3>A danger zone that argues with you</h3>
-        <p>Owner only, two scopes: <b>Clear inventory</b> wipes stock, history and suppliers but
-          keeps accounts, teams and settings; <b>Factory reset</b> takes the whole thing back to the
-          first-run screen. Three things have to be right before anything is removed &mdash; your
-          password re-entered, the word DELETE typed out, and a backup ticked, which writes a copy
-          of the database first. A wrong password answers 403, so a dialog doesn't bounce you to the
-          sign-in page and lose its place.</p>
-      </div>
-      <div class="limit">
-        <h3>Hardened where it counts</h3>
-        <p>Passwords go through 600,000 PBKDF2-SHA256 rounds and are rehashed on the next sign-in
-          after a policy bump, with no forced resets. Ten characters minimum, the usual breach-list
-          guesses and your own username refused. Responses carry a Content-Security-Policy and a
-          Permissions-Policy; HSTS appears only when TLS is on. A state-changing request arriving
-          from another site is refused before it reaches a route, and the database file is 0600 from
-          the moment it is created.</p>
+
+      <div class="bundle">
+        <span class="tag">Enterprise</span>
+        <h3>Multi-site, board-ready</h3>
+        <p class="for">A group with several shelves, an IT rule about data, and directors who
+          want the same figures.</p>
+        <p class="price">$1,850<small>one-time · unlimited items · unlimited accounts</small></p>
+        <ul>
+          <li>Everything in Business, plus:</li>
+          <li><b>Unlimited</b> items and accounts</li>
+          <li><b>Board licence</b> — read-only accounts for the board and directors, and the same
+            dashboard on a boardroom screen</li>
+          <li><b>24 months</b> of updates</li>
+          <li>Named support contact, 4-hour response in business hours</li>
+          <li>Two hours of remote training for your team</li>
+          <li>Yearly health check: backup restore, updates, housekeeping</li>
+        </ul>
+        <p class="cta"><a class="btn ghost" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20Enterprise%20bundle">Ask about Enterprise</a></p>
       </div>
     </div>
+
+    <p class="fineprint">
+      <b>In every bundle:</b> the full product, the Windows installer and the Linux/macOS archive,
+      the test suite, backup and restore scripts, the audit trail, and the local-only security
+      model. <b>Item and account counts are licence terms, not limits in the code</b> — nobody is
+      locked out at item 301. <b>After the included months</b>, updates and support renew at $99 /
+      $249 / $690 a year (Beginner / Business / Enterprise); the installed copy keeps working if
+      you don't renew. <b>Try before you buy:</b> ask for the build, run it on your own list for
+      two weeks, then decide.
+    </p>
   </div>
 </section>
 
@@ -496,299 +680,98 @@
     <div class="sec-head">
       <p class="eyebrow">Set up</p>
       <h2>One machine you already own, and about ten minutes.</h2>
-      <p>There is no build step and no database server to install. The whole footprint is a Python
-        environment of about 32 MB and a SQLite file that starts empty. Pick the route that matches
-        where it will live.</p>
+      <p>No server, no Docker, no database to install. The Windows build is an installer; the
+        Linux and macOS build is one archive with systemd or launchd units inside.</p>
     </div>
-
-    <div class="tscroll">
-    <table class="routes">
-      <thead><tr><th>Route</th><th>What it's for</th><th>What you need</th></tr></thead>
-      <tbody>
-        <tr>
-          <td>Try it</td>
-          <td>See the thing running with demo data before deciding anything.</td>
-          <td class="who">Python 3.11+, five commands</td>
-        </tr>
-        <tr>
-          <td>One machine</td>
-          <td>The normal install: a front-desk PC, a NAS or a mini-PC in the office, started at boot by systemd.</td>
-          <td class="who">Linux, systemd, a user for the service</td>
-        </tr>
-        <tr>
-          <td>Server + TLS</td>
-          <td>Staff reach it from home through a browser with a real certificate — no VPN client to install.</td>
-          <td class="who">A small VPS, nginx, certbot</td>
-        </tr>
-        <tr>
-          <td>Windows</td>
-          <td>An installer for an office PC, bundling its own Python. Nothing else to install.</td>
-          <td class="who">Windows 10/11, the .exe</td>
-        </tr>
-        <tr>
-          <td>macOS</td>
-          <td>A Mac mini or iMac as the always-on box; launchd instead of systemd.</td>
-          <td class="who">Python 3.11+, any macOS that runs it</td>
-        </tr>
-        <tr>
-          <td>Another device</td>
-          <td>Not supported on purpose: the dashboard listens on loopback only, so the stock list never sits on a network.</td>
-          <td class="who">—</td>
-        </tr>
-      </tbody>
-    </table></div>
 
     <div class="split">
       <div>
-        <p class="eyebrow" style="margin-bottom:10px">The five-command version</p>
+        <ol class="flow">
+          <li><h3>Pick the machine</h3><p>Any PC that is on during working hours — the counter PC,
+            the office desktop, a small mini-PC in the store. 2 GB of RAM is plenty for a
+            catalogue of thousands of items.</p></li>
+          <li><h3>Install and open</h3><p>Windows: run the installer, the dashboard opens at
+            <code>localhost:8123</code> and starts with the session. Linux/macOS: unpack and run
+            <code>run.sh</code>, or install the unit so it comes back after a reboot.</p></li>
+          <li><h3>Make the owner account</h3><p>First run asks for an email and a password (10
+            characters minimum). Sign-up stays off, so nobody else can create an account on their
+            own.</p></li>
+          <li><h3>Bring your list in</h3><p>Import the workbook you already have. Headers are
+            matched by name, unknown ones become your columns, and items with no stock column land
+            as <i>no count</i> rather than a fake zero.</p></li>
+          <li><h3>Set suppliers, then let it run</h3><p>Give each vendor its delivery days, press
+            <b>fill missing reorder points</b>, and the board starts telling you what needs
+            ordering the same afternoon.</p></li>
+        </ol>
+      </div>
+      <div>
         <pre><b>tar</b> -xzf stockwatch-1.6.1.tar.gz &amp;&amp; cd stockwatch-1.6.1
-<b>python3</b> -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt
-<b>./run.sh</b> --demo          <span style="color:var(--muted)"># seeds the demo inventory</span>
-<span style="color:var(--muted)"># open http://127.0.0.1:8123 — the setup form creates the owner account</span>
-<b>curl</b> -s localhost:8123/api/health   <span style="color:var(--muted)"># {"ok":true,"version":"1.6.1",…}</span></pre>
-        <p class="note" style="margin-top:12px; color:var(--muted); font-size:13px">
-          The first person to open the setup form becomes the owner. Accounts after that are made
-          by the owner from Settings → Access.
-        </p>
-      </div>
-      <div>
-        <p class="eyebrow" style="margin-bottom:10px">Before you hand it to anyone</p>
-        <ul class="check">
-          <li><b>Backups leave the machine.</b> A nightly job and a restore script ship with it; a
-            backup on the same disk protects you from a bad upgrade, not from a dead disk.</li>
-          <li><b>One hostname, one certificate.</b> Behind TLS, turn on <code>cookie_secure</code> so
-            the session cookie is marked Secure. Behind plain HTTP, leave it off.</li>
-          <li><b>A health probe.</b> <code>/api/health</code> answers without a session, so an uptime
-            monitor can watch it from somewhere else.</li>
-          <li><b>The owner's own password.</b> Not a default, not one you know.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+<b>./run.sh</b>                      <span style="color:var(--muted)"># creates its venv, opens :8123</span>
+<span style="color:var(--muted)"># optional: run it as a service</span>
+<b>sudo</b> cp deploy/stockwatch.service /etc/systemd/system/
+<b>sudo</b> systemctl enable --now stockwatch
 
-<section id="power">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Power &amp; outages</p>
-      <h2>A plain surge protector protects the hardware.<br>It does nothing for the outage.</h2>
-      <p>Plenty of small installations buy a power strip, feel prepared, and then discover the real
-        failure mode: the box is fine, but it's off, and nobody is in the building to press the
-        button. This is the part worth spending an afternoon on before go-live.</p>
-    </div>
-
-    <div class="power">
-      <div class="chain bad">
-        <h3>Surge protector only</h3>
-        <div class="nodes">
-          <span class="node dead">Mains</span><span class="arrow">→</span>
-          <span class="node dead">Strip</span><span class="arrow">→</span>
-          <span class="node dead">Box</span><span class="arrow">→</span>
-          <span class="node dead">Dashboard</span>
-        </div>
-        <p>Rides out nothing. A spike is absorbed; a two-second dip reboots the machine, and a
-          hard power cut mid-write is exactly the case SQLite's journal is there for — but the
-          dashboard is still gone until someone notices.</p>
-      </div>
-      <div class="chain good">
-        <h3>UPS + auto-restart</h3>
-        <div class="nodes">
-          <span class="node dead">Mains</span><span class="arrow">→</span>
-          <span class="node ups">UPS</span><span class="arrow">→</span>
-          <span class="node">Box</span><span class="arrow">→</span>
-          <span class="node">Dashboard</span>
-        </div>
-        <p>A small 600 VA unit keeps a 60 MB process and a monitor-less mini-PC alive for far
-          longer than a brownout lasts, and it rides out the flicker that reboots a bare strip.
-          Add <code>Restart=on-failure</code> and enabling at boot, and the box comes back on its
-          own after a real cut.</p>
-      </div>
-    </div>
-
-    <div class="split">
-      <div>
-        <p class="eyebrow" style="margin-bottom:12px">The outage checklist</p>
-        <ul class="check">
-          <li><b>UPS on the box, not on the desk lamp.</b> One outlet, sized to the machine — a
-            600 VA unit is generous for this workload.</li>
-          <li><b>Service enabled at boot</b> with <code>Restart=on-failure</code>. That is the
-            difference between "it came back" and "it needs a person".</li>
-          <li><b>Nightly backup to a different machine.</b> The database is one file; a restore is
-            a copy and a restart, not a project.</li>
-          <li><b>An uptime probe from outside</b> hitting <code>/api/health</code>, so you learn
-            about the outage before a branch does.</li>
-          <li><b>A named person who can reboot it</b> at 9pm. Decide that before selling, because
-            you will be making that call.</li>
-        </ul>
-      </div>
-      <div>
+<b>curl</b> -s localhost:8123/api/health   <span style="color:var(--muted)"># {"ok":true,"version":"1.6.1"}</span></pre>
         <div class="callout">
-          <h3>What it does not have</h3>
-          <p>There is no high availability: one box, one database file, one writer. That is a
-            deliberate trade for running on hardware a clinic can afford. If the box is down, the
-            dashboard is down — so the UPS, the backup and the reboot plan are not extras, they are
-            the availability story.</p>
-        </div>
-        <div class="callout">
-          <h3>What survives a cut</h3>
-          <p>SQLite in WAL mode with a per-write transaction: a power loss mid-write rolls back to
-            the last committed change, and the movement log is the same journal. Expect to lose at
-            most the single action that was in flight — not the day's counts.</p>
+          <h3>What it needs</h3>
+          <p>Python 3.11 or newer on Linux/macOS (the Windows build ships its own runtime), 60 MB of
+            memory, one SQLite file in <code>data/</code>. No internet connection at run time — the
+            update check is you, unzipping a newer archive.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="accounts">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Branch accounts</p>
-      <h2>One account per branch, named so the audit log reads like a map.</h2>
-      <p>Stockwatch uses an email-shaped identifier to sign in, and prints it next to every change
-        it records. That makes the naming scheme an operational decision, not a cosmetic one: pick
-        it before the first branch is created and the movement log stays readable for years.</p>
-    </div>
-
-    <div class="scheme">
-      <div>
-        <p class="eyebrow" style="margin-bottom:10px">A scheme that sorts</p>
-        <pre><b>{branch}{sequence}</b>@{your-domain}
-
-yourcoKL001@yourco.my      <span style="color:var(--muted)"># Kuala Lumpur, first account</span>
-yourcoPERAK001@yourco.my   <span style="color:var(--muted)"># Perak</span>
-yourcoPERAK002@yourco.my   <span style="color:var(--muted)"># Perak, second person</span>
-yourcoJH001@yourco.my      <span style="color:var(--muted)"># Johor</span></pre>
-        <div class="callout">
-          <h3>Use a domain you own</h3>
-          <p><code>@email.com</code> is not a domain anyone can register — the examples above use
-            your own domain instead. It matters for a practical reason: password-reset links and
-            alert digests are delivered to that address, so it has to be a mailbox that exists.
-            If you don't want a mailbox per branch, a catch-all or plus-addressing
-            (<code>it+kl001@…</code>) on one domain works, as long as the address stays identical
-            everywhere it's typed.</p>
-        </div>
-      </div>
-
-      <div>
-        <p class="eyebrow" style="margin-bottom:10px">Codes worth standardising</p>
-        <div class="tscroll">
-    <table class="branch">
-          <thead><tr><th>Code</th><th>Branch</th><th>Example</th></tr></thead>
-          <tbody>
-            <tr><td>KL</td><td class="state">Kuala Lumpur</td><td>…KL001@</td></tr>
-            <tr><td>SEL</td><td class="state">Selangor</td><td>…SEL001@</td></tr>
-            <tr><td>PERAK</td><td class="state">Perak</td><td>…PERAK001@</td></tr>
-            <tr><td>PEN</td><td class="state">Penang</td><td>…PEN001@</td></tr>
-            <tr><td>JH</td><td class="state">Johor</td><td>…JH001@</td></tr>
-            <tr><td>PHG</td><td class="state">Pahang</td><td>…PHG001@</td></tr>
-            <tr><td>SBH</td><td class="state">Sabah</td><td>…SBH001@</td></tr>
-            <tr><td>SWK</td><td class="state">Sarawak</td><td>…SWK001@</td></tr>
-          </tbody>
-        </table></div>
-        <p class="note" style="margin-top:12px; color:var(--muted); font-size:13px">
-          Three or four letters, uppercase, no punctuation. The sequence is two digits, so branch
-          number ten (010) still sorts after nine.
-        </p>
-      </div>
-    </div>
-
-    <div class="split">
-      <div>
-        <p class="eyebrow" style="margin-bottom:12px">How the roles line up</p>
-        <ul class="check">
-          <li><b>Owner</b> — the company, not a branch. This is the only account that can create
-            users and teams, so it should be a head-office address, not the busiest branch.</li>
-          <li><b>Team leader</b> — one per branch. Runs that branch's stock and adds or removes
-            its members. Cannot create accounts.</li>
-          <li><b>Member</b> — the staff at the shelf. Stock movements only.</li>
-          <li><b>Guest</b> — an auditor or locum who needs to read and nothing else.</li>
-        </ul>
-      </div>
-      <div>
-        <div class="callout">
-          <h3>One team per branch</h3>
-          <p>Create a team per branch with that branch's manager as its leader. Grouping and the
-            activity view then read per branch without a custom column, and offboarding is one
-            action: remove the person from the team, then disable the account.</p>
-        </div>
-        <div class="callout">
-          <h3>What an address buys you</h3>
-          <p>The activity feed and every movement row carry the account that made them. With a
-            branch code in the address, "who cut 400 tubes on Tuesday" is answerable from the log
-            without a lookup table.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
+<section id="limits">
   <div class="wrap">
     <div class="sec-head">
       <p class="eyebrow">Honest limits</p>
       <h2>What it doesn't do, so nobody finds out later.</h2>
     </div>
     <div class="limits">
-      <div class="limit">
-        <h3>No lot or expiry tracking</h3>
-        <p>Nothing in the model knows a unit can spoil. If expiry dates matter — and in a clinic
-          or a pharmacy they usually do — that is a feature to add, not a setting. Until then,
-          keep the lot and expiry on the box.</p>
+      <div class="limit"><h3>It runs on one machine</h3><p>By design: it binds loopback only and
+        refuses anything else. Other people use it on that machine, or on its screen — not from
+        their own laptop over the network.</p></div>
+      <div class="limit"><h3>No TLS, no MFA, no SSO</h3><p>The transport is your desk, not the
+        internet. Login is email + password with a lockout after five failures, and sessions you
+        can cut. There is no encryption at rest.</p></div>
+      <div class="limit"><h3>One database per install</h3><p>No multi-tenancy: a second branch is a
+        team and an account, not a separate tenant. Separate shelves that never mix need their own
+        install.</p></div>
+      <div class="limit"><h3>It is not an accounting system</h3><p>It prices usage from unit price,
+        not from invoices. The yearly spend is typed in from your accounts — the app will not
+        reconcile a purchase ledger.</p></div>
+      <div class="limit"><h3>Stock is a number</h3><p>No barcodes, no lot numbers, no expiry dates,
+        no serials. If you need batch traceability this is the wrong tool and I will say so.</p>
       </div>
-      <div class="limit">
-        <h3>Day boundaries are UTC</h3>
-        <p>Usage buckets and spike windows roll over on UTC days, so a branch eight hours ahead
-          sees "today" start at 08:00 local. Consistent, but worth knowing.</p>
-      </div>
-      <div class="limit">
-        <h3>One lead time per supplier</h3>
-        <p>A vendor that ships some lines in three days and others in thirty needs either a
-          per-item override or two supplier records.</p>
-      </div>
-      <div class="limit">
-        <h3>One writer</h3>
-        <p>SQLite and a single process: comfortable for tens of users and thousands of items, not
-          a platform for hundreds of concurrent writers.</p>
-      </div>
-      <div class="limit">
-        <h3>Exports exclude incoming stock</h3>
-        <p>CSV, XLSX and PDF show what is on the shelf. Scheduled deliveries live in the dashboard
-          until they are received.</p>
-      </div>
-      <div class="limit">
-        <h3>Costs are an estimate, not a ledger</h3>
-        <p>The cost panel multiplies measured usage by each item's current unit price, so a price
-          change rewrites history and an item with no price is counted as unpriced rather than
-          guessed at. The yearly spend figure is typed in by a person. Treat both as a steer on
-          spending, not as something to reconcile your accounts against.</p>
-      </div>
-      <div class="limit">
-        <h3>You are the update channel</h3>
-        <p>No auto-update, no telemetry, no phone-home. Upgrades are a tarball and a restart, done
-          deliberately.</p>
-      </div>
+      <div class="limit"><h3>Backups live on the same disk</h3><p>The nightly copy protects against
+        a bad upgrade or a corrupt file, not against the disk dying. Copy the folder somewhere
+        else weekly — it is one file.</p></div>
     </div>
   </div>
 </section>
 
-<div class="close" id="download">
+<div class="close" id="get">
   <div class="wrap inner">
     <div>
       <h2>Run it on a machine you already have.</h2>
       <p>Stockwatch 1.6.1 ships with its test suite, a verified backup and restore, systemd and
-        launchd units, nginx deployment files, and a distribution guide that covers install,
-        upgrade and recovery. The database never leaves your hardware.</p>
-      <p class="dl-note">Not sure which one? <a href="#setup">Read the setup steps</a> first —
-        the Linux and macOS build is the same archive, installed with systemd or launchd.</p>
+        launchd units, a Windows installer, and a distribution guide that covers install, upgrade
+        and recovery. The database never leaves your hardware.</p>
+      <p class="dl-note">Ask for the build and you get the archive with the install steps; say
+        which platform and where it will run. Not sure which bundle? <a href="#bundles">Read the
+        three</a> — or ask, and I will point at the one that fits.</p>
     </div>
     <div>
       <div class="downs">
-        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>Linux</b><span>.tar.gz · systemd · by request</span></a>
-        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>macOS</b><span>.tar.gz · launchd · by request</span></a>
-        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>Windows</b><span>.exe installer · by request</span></a>
+        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&amp;body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>Linux</b><span>.tar.gz · systemd · by request</span></a>
+        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&amp;body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>macOS</b><span>.tar.gz · launchd · by request</span></a>
+        <a class="dl" href="mailto:nxautomation003@gmail.com?subject=Stockwatch%20build%20request&amp;body=Which%20platform%3A%20Linux%20%2F%20macOS%20%2F%20Windows%0AWhere%20it%20would%20run%3A%0AHow%20many%20people%20use%20it%3A"><b>Windows</b><span>.exe installer · by request</span></a>
       </div>
-      <p class="dl-note">The build is private: write to <a href="mailto:nxautomation003@gmail.com">nxautomation003@gmail.com</a>, say which platform and where it will run, and you get the archive with the install steps · v1.6.1 · 140 KB archive, 11 MB installer</p>
+      <p class="dl-note">The build is private: write to <a href="mailto:nxautomation003@gmail.com">nxautomation003@gmail.com</a>,
+        say which platform and where it will run, and you get the archive with the install steps ·
+        v1.6.1 · 140 KB archive, 11 MB installer</p>
     </div>
   </div>
 </div>
@@ -801,7 +784,3 @@ yourcoJH001@yourco.my      <span style="color:var(--muted)"># Johor</span></pre>
     <span>Self-hosted · SQLite · Python</span>
   </div>
 </footer>
-
-
-</body>
-</html>
